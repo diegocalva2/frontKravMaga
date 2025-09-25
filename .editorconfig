@@ -1,0 +1,32 @@
+root = true
+
+# Configuración global
+[*]
+charset = utf-8
+end_of_line = CRLF
+insert_final_newline = false
+trim_trailing_whitespace = true
+
+# Archivos JavaScript/TypeScript
+[*.{js,jsx,ts,tsx}]
+indent_style = space
+indent_size = 2
+
+# Archivos CSS
+[*.{css,scss,sass}]
+indent_style = space
+indent_size = 2
+
+# Archivos de configuración
+[*.{json,yml,yaml}]
+indent_style = space
+indent_size = 2
+
+# Markdown (no quitar espacios al final)
+[*.md]
+trim_trailing_whitespace = false
+
+# Archivos de paquetes (no modificar)
+[{package.json,package-lock.json}]
+indent_style = space
+indent_size = 2

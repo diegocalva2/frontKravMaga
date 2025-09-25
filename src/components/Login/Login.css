@@ -1,0 +1,127 @@
+.login-container {
+  width: 420px;
+  background-color: rgba(255, 255, 255, 0.15);
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(25px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  color: #2d3748;
+  border-radius: 15px;
+  padding: 30px 40px;
+}
+
+.login-container h1 {
+  font-size: 36px;
+  text-align: center;
+  color: #1a365d;
+  margin-bottom: 30px;
+  font-weight: 600;
+}
+
+.login-container .input-box {
+  position: relative;
+  width: 100%;
+  height: 50px;
+  margin: 30px 0;
+}
+
+.input-box input {
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.2);
+  outline: none;
+  border: 2px solid rgba(45, 55, 72, 0.2);
+  border-radius: 40px;
+  font-size: 16px;
+  color: #2d3748;
+  padding: 20px 45px 20px 20px;
+  transition: all 0.3s ease;
+}
+
+.input-box input:focus {
+  border-color: rgba(26, 54, 93, 0.4);
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.input-box input::placeholder {
+  color: #4a5568;
+  opacity: 0.8;
+}
+
+.input-box .icon {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+  color: #4a5568;
+}
+
+.login-container .remember-forgot {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  margin: -15px 0 15px;
+}
+
+.remember-forgot label {
+  color: #4a5568;
+  display: flex;
+  align-items: center;
+}
+
+.remember-forgot label input {
+  accent-color: #2c5282;
+  margin-right: 6px;
+}
+
+.remember-forgot a {
+  color: #2c5282;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.remember-forgot a:hover {
+  text-decoration: underline;
+  color: #1a365d;
+}
+
+.login-container button {
+  width: 100%;
+  height: 45px;
+  background: linear-gradient(135deg, #2c5282 0%, #1a365d 100%);
+  border: none;
+  outline: none;
+  border-radius: 40px;
+  box-shadow: 0 4px 15px rgba(44, 82, 130, 0.3);
+  cursor: pointer;
+  font-size: 16px;
+  color: #ffffff;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.login-container button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(44, 82, 130, 0.4);
+}
+
+.login-container .register-link {
+  font-size: 14.5px;
+  text-align: center;
+  margin: 20px 0 15px;
+}
+
+.register-link p {
+  color: #4a5568;
+}
+
+.register-link p a {
+  color: #38a169;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.register-link p a:hover {
+  text-decoration: underline;
+  color: #2f855a;
+}
