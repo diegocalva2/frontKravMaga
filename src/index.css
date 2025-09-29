@@ -6,7 +6,16 @@
   box-sizing: border-box;
 }
 
-body {
+
+ html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* evita scroll si se pasa */
+ } 
+
+ body {
   font-family: 'Arimo', sans-serif;
   --webkit-font-smoothing: antialiased;
   --moz-osx-font-smoothing: grayscale;
@@ -14,12 +23,16 @@ body {
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background: url('./assets/819506.png') no-repeat;
+
+  background: url('./assets/view-pair-boxing-gloves.jpg') no-repeat;
+
+
   background-size: cover;
-  background-position: center;
-}
+  background-position: center; */
+ 
 
 code {
   font-family:
     source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
+ }
