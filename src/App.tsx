@@ -3,6 +3,7 @@ import './App.css';
 import Login from './components/Login/Login';
 import Page from './components/pagina/page';
 import ProtectedRoute from './router/ProtectedRoute';
+import DashboardPage from "./pages/DashboardPage";
 
 function App() {
   return (
@@ -13,7 +14,11 @@ function App() {
           <Page />
         </ProtectedRoute>
       } />
-
+      <Route path="/dashboard"
+        element={
+            <DashboardPage/>
+        }
+      />
       <Route path="*" element={<h1>404 - No encontrado</h1>} />
 
     </Routes>
