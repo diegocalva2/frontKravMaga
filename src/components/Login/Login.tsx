@@ -1,7 +1,7 @@
 import './Login.css'
 import { FaUserAstronaut } from "react-icons/fa";
 import { RiLockPasswordFill } from 'react-icons/ri';
-import { useAlert } from '../Message-global/AlertProvider';
+import { useAlert } from '../Message-global/useAlert';
 import z from 'zod';
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
@@ -61,7 +61,7 @@ const Login = () => {
   const isDisabled = !formData.email || !formData.password;
 
   return (
-    
+
 
     <div className="login-container">
       <form onSubmit={handleSubmit}>

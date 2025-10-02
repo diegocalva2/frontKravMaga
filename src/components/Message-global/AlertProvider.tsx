@@ -1,19 +1,6 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { useState } from "react";
 import { Snackbar, Alert, type AlertColor } from "@mui/material";
-
-type AlertContextType = {
-  showAlert: (message: string, type?: AlertColor) => void;
-};
-
-const AlertContext = createContext<AlertContextType | undefined>(undefined);
-
-export const useAlert = () => {
-  const context = useContext(AlertContext);
-  if (!context) {
-    throw new Error("useAlert debe usarse dentro de un AlertProvider");
-  }
-  return context;
-};
+import { AlertContext } from "./AlertContext";
 
 export const AlertProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [alert, setAlert] = useState<{ message: string; type: AlertColor } | null>(null);
@@ -26,8 +13,6 @@ export const AlertProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   return (
     <AlertContext.Provider value={{ showAlert }}>
       {children}
-
-      {/* Snackbar global */}
       {alert && (
         <Snackbar
           open={!!alert}

@@ -1,8 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400..700;1,400..700&display=swap');
 @import "tailwindcss";
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 
 * {
   box-sizing: border-box;
@@ -34,8 +31,8 @@ body {
   background-position: center;
 
 }
-  code {
-    font-family:
-      source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
-  }
 
+code {
+  font-family:
+    source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
