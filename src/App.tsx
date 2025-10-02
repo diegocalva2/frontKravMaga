@@ -3,7 +3,7 @@ import './App.css';
 import Login from './components/Login/Login';
 import Page from './components/pagina/page';
 import ProtectedRoute from './router/ProtectedRoute';
-import DashboardPage from "./pages/DashboardPage";
+import DashboardPage from "./pages/DashboardPageDos";
 
 function App() {
   return (
@@ -22,7 +22,7 @@ function App() {
       <Route path="*" element={<h1>404 - No encontrado</h1>} />
 
     </Routes>
-  );
+  ); 
 }
 
 export default App;
