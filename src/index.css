@@ -10,14 +10,8 @@ body,
   height: 100%;
   margin: 0;
   padding: 0;
-  overflow: hidden;
-
-  background-image: url('/src/assets/close-up-boxing-gloves.jpg');
-  background-size: cover;
-  /* ✅ que ocupe todo */
-  background-position: center;
-  /* ✅ centrada */
-  background-repeat: no-repeat;
+  /* overflow: hidden; */
+  /* evita scroll si se pasa */
 }
 
 /* Fuente global */
