@@ -62,7 +62,7 @@ const DashboardPage: React.FC = () => {
               title={`Inventario Crítico (${inventarioMock.length})`}
               subtitle="Productos que requieren reabastecimiento urgente."
               Icon={Package}
-              className="border border-yellow-200"
+              className="border border-yellow-00"
             >
               <InventoryList items={inventarioMock} />
             </SectionCard>

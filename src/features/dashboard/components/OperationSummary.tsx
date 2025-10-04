@@ -13,7 +13,10 @@ export const OperationSummary: React.FC<OperationSummaryData> = ({
         <p className="text-sm text-gray-500 mt-1">Tasa de Asistencia Hoy</p>
       </div>
       <div className="p-3 border rounded-lg">
-        <p className="text-4xl font-bold text-gray-800">{claseMasConcurrida}</p>
+        <p className="text-4xl font-bold" style={{ color: "#2e599b" }}>
+          {claseMasConcurrida}
+        </p>
+
         <p className="text-sm text-gray-500 mt-1">Clase Más Concurrida</p>
       </div>
       <div className="p-3 border rounded-lg">
@@ -21,7 +24,9 @@ export const OperationSummary: React.FC<OperationSummaryData> = ({
           {oportunidadesVenta}
           <UserPlus className="w-8 h-8 ml-2" />
         </p>
-        <p className="text-sm text-gray-500 mt-1">Oportunidades de Venta (Prueba)</p>
+        <p className="text-sm text-gray-500 mt-1">
+          Oportunidades de Venta (Prueba)
+        </p>
       </div>
     </div>
   );
