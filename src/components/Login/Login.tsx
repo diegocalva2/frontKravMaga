@@ -48,7 +48,7 @@ const Login = () => {
     const ok = await login(formData.email, formData.password);
 
     if (ok) {
-      navigate("/page");
+      navigate("/productos");
     } else {
       showAlert("Credenciales incorrectas", "error");
     }

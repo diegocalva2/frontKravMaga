@@ -9,7 +9,7 @@ import React from "react";
 const initialAuthState: AuthState = {
     user: null,
     isAuthenticated: false,
-    isLoading: false, // Empezamos en true para verificar la sesión inicial
+    isLoading: true, // Empezamos en true para verificar la sesión inicial
     error: null,
     login: async () => false, // Función vacía por defecto
     logout: () => { }, // Función vacía por defecto
@@ -27,7 +27,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const [user, setUser] = useState<UserSessionData | null>(null);
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
     // --- Lógica del Login (Usando el servicio) ---
@@ -62,10 +62,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // navigate('/login');
     }, []);
 
-    // --- Lógica de Verificación de Sesión Inicial (Al cargar la app) ---
+    // --- VERIFICAR SESIÓN AL INICIAR ---
     useEffect(() => {
-        setIsLoading(true);
-        (async () => {
+        const checkSession = async () => {
             try {
                 const userData = await verifySession();
                 setUser(userData);
@@ -74,9 +73,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 setUser(null);
                 setIsAuthenticated(false);
             } finally {
-                setIsLoading(false);
+                setIsLoading(false); // 🔹 Importante: termina la carga
             }
-        })();
+        };
+
+        // Solo verifica si NO estamos en login
+        if (window.location.pathname !== '/login') {
+            checkSession();
+        } else {
+            setIsLoading(false);
+        }
     }, []);
 
     // Valores que se pasan a todos los consumidores del Contexto

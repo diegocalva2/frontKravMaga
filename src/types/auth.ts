@@ -8,6 +8,8 @@ export interface LoginResponse {
 export interface UserSessionData {
     IdUsuario: number;
     IdRol: number;
+    userName: string;
+    rolName: string;
 }
 
 export interface AuthState {

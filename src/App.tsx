@@ -4,12 +4,26 @@ import Login from "./components/Login/Login";
 import Page from "./components/pagina/page";
 import DashboardPage from "./pages/DashboardPageDos";
 import NavegationBarLayout from "./layouts/navegationBar";
+import ProtectedRoute from "./router/ProtectedRoute";
+import Productos from "./pages/Productos";
 
 function App() {
   return (
     <Routes>
       {/* Ruta pública de login */}
       <Route path="/login" element={<Login />} />
+
+      {/* Rutas protegidas con autenticación: */}
+      <Route
+        path="/productos"
+        element={
+          <ProtectedRoute>
+            <Productos />
+          </ProtectedRoute>
+        }
+      >
+      </Route>
+
 
       {/* Layout SIN protección (temporalmente para pruebas) */}
       <Route path="/" element={<NavegationBarLayout />}>
