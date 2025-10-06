@@ -35,7 +35,6 @@ const DashboardPage: React.FC = () => {
      <div className="font-sans h-screen overflow-y-auto p-4 md:p-8" >
       <div className="container mx-auto">
         <div className="space-y-8">
-          <h1 className="text-4xl font-extrabold text-gray-900">Dashboard de Krav Maga</h1>
 
           {/* 1. Tarjetas de Resumen */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

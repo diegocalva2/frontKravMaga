@@ -2,9 +2,8 @@ import type { AlertItem } from "../types/dashboardTypesDos";
 
 export const AlertList: React.FC<{ items: AlertItem[] }> = ({ items }) => {
   return (
-    <div className="bg-slate-700/70 rounded-xl p-4 shadow-lg"> {/* <-- Aquí está el card */}
-      <h2 className="text-lg font-semibold text-gray-100 mb-1">Alertas</h2>
-      <ul className="divide-y divide-gray-400">
+    <div className="bg-slate-600/50 rounded-xl p-4 shadow-lg"> {/* <-- Aquí está el card */}
+           <ul className="divide-y divide-gray-400">
         {items.map((item) => (
           <li
             key={item.id}
@@ -14,7 +13,7 @@ export const AlertList: React.FC<{ items: AlertItem[] }> = ({ items }) => {
               <p className="font-medium text-gray-100">{item.nombre}</p>
               <p className="text-xs text-gray-200">Plan: {item.plan}</p>
             </div>
-            <span className="text-xs font-semibold text-red-400 bg-red-500/20 px-3 py-1 rounded-full">
+            <span className="text-xs font-semibold text-red-500 bg-red-400/20 px-3 py-1 rounded-full">
               Vence en {item.diasParaVencer} días
             </span>
           </li>
