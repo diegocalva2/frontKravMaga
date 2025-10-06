@@ -1,14 +1,23 @@
-import type { Producto } from '../types/Products';
-import { getProductos } from '../services/productosService';
 import React from 'react';
-import { Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow } from '@mui/material';
+import type { Producto } from '../types/Products';
+import { addProducto, deleteProducto, getProductos, updateProducto } from '../services/productosService';
+import EliminarProducto from '../features/productos/components/EliminarProducto';
+import { Box, Button, Paper, useMediaQuery, useTheme, Typography } from '@mui/material';
+import { Edit as EditIcon, Trash2 as DeleteIcon } from 'lucide-react';
+import { DataGrid, type GridColDef, type GridRenderCellParams } from '@mui/x-data-grid';
+import { ProductoForm } from '../features/productos/components/ProductoForm';
 
 const Productos = () => {
     const [productos, setProductos] = React.useState<Producto[]>([]);
     const [loading, setLoading] = React.useState(true);
 
-    const [page, setPage] = React.useState(0);
-    const [rowsPerPage, setRowsPerPage] = React.useState(10);
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+    const [openDialog, setOpenDialog] = React.useState(false);
+    const [productoSeleccionado, setProductoSeleccionado] = React.useState<Producto | null>(null);
+
+    const [openForm, setOpenForm] = React.useState(false);
 
     React.useEffect(() => {
         const fetchProductos = async () => {
@@ -16,7 +25,7 @@ const Productos = () => {
                 const data = await getProductos();
                 setProductos(data);
             } catch (error) {
-                console.error('Error al cargar productos:', error);
+                console.error(error);
             } finally {
                 setLoading(false);
             }
@@ -24,122 +33,202 @@ const Productos = () => {
         fetchProductos();
     }, []);
 
-    const handleChangePage = (_event: unknown, newPage: number) => {
-        setPage(newPage);
+    const handleAgregar = () => {
+        setProductoSeleccionado(null);
+        setOpenForm(true);
     };
 
-    const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setRowsPerPage(+event.target.value);
-        setPage(0);
+    const handleEditar = (producto: Producto) => {
+        setProductoSeleccionado(producto);
+        setOpenForm(true);
     };
 
-    const handleEdit = (producto: Producto) => {
-        console.log('Editar producto:', producto);
-        // Aquí puedes abrir un modal o navegar a otra página de edición
+    const handleSubmit = async (
+        producto: Omit<Producto, "producto_id"> & Partial<Pick<Producto, "producto_id">>
+    ) => {
+        try {
+            if (producto.producto_id) {
+                // Editar producto
+                await updateProducto(producto.producto_id, producto);
+                setProductos(prev =>
+                    prev.map(p =>
+                        p.producto_id === producto.producto_id ? { ...p, ...producto } : p
+                    )
+                );
+                return { success: true, message: "Producto actualizado correctamente" };
+            } else {
+                // Agregar producto
+                const nuevo = await addProducto(producto);
+                setProductos(prev => [...prev, nuevo]);
+                return { success: true, message: "Producto agregado correctamente" };
+            }
+        } catch (error) {
+            console.error("Error guardando producto", error);
+            return { success: false, message: "Error guardando producto" };
+        }
     };
 
-    const handleDelete = (producto: Producto) => {
-        console.log('Eliminar producto:', producto);
-        // Aquí puedes mostrar un diálogo de confirmación antes de eliminar
+    const handleOpenDialog = (producto: Producto) => {
+        setProductoSeleccionado(producto);
+        setOpenDialog(true);
+    };
+    const handleCloseDialog = () => setOpenDialog(false);
+
+    const handleConfirmDelete = async () => {
+        if (!productoSeleccionado) return;
+        try {
+            await deleteProducto(productoSeleccionado.producto_id);
+            setProductos(prev => prev.filter(p => p.producto_id !== productoSeleccionado.producto_id));
+            setOpenDialog(false);
+        } catch (error) {
+            console.error("Error eliminando producto", error);
+        }
     };
 
-    if (loading) return <div className="text-white p-4">Cargando productos...</div>;
+    const columns: GridColDef[] = [
+        { field: 'producto_id', headerName: 'ID', width: 70 },
+        { field: 'nombre', headerName: 'Nombre', flex: 1 },
+        {
+            field: 'precio',
+            headerName: 'Precio',
+            type: 'number',
+            headerAlign: 'right',
+            align: 'right',
+        },
+        {
+            field: 'stock',
+            headerName: 'Stock',
+            type: 'number',
+            headerAlign: 'right',
+            align: 'right',
+        },
+        { field: 'descripcion', headerName: 'Descripción', flex: 1 },
+        {
+            field: 'acciones',
+            headerName: 'Acciones',
+            width: 160,
+            headerAlign: 'center',
+            align: 'center',
+            sortable: false,
+            filterable: false,
+            renderCell: (params: GridRenderCellParams<Producto>) => (
+                <Box
+                    sx={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        gap: 1,        // espacio entre botones
+                        flexWrap: 'wrap', // permite que los botones se muevan a otra línea si no caben
+                        width: '100%',    // asegura que el Box ocupe toda la celda
+                    }}
+                >
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        size="small"
+                        onClick={() => handleEditar(params.row)}
+                        startIcon={isMobile ? <EditIcon size={16} /> : undefined}
+                        sx={{
+                            minWidth: isMobile ? 36 : 70,  // ancho mínimo ajustado
+                            fontSize: isMobile ? '0.65rem' : '0.75rem',
+                            px: 1,
+                        }}
+                    >
+                        {!isMobile && 'Editar'}
+                    </Button>
+
+                    <Button
+                        variant="contained"
+                        color="error"
+                        size="small"
+                        onClick={() => handleOpenDialog(params.row)}
+                        startIcon={isMobile ? <DeleteIcon size={16} /> : undefined}
+                        sx={{
+                            minWidth: isMobile ? 36 : 70,  // ancho mínimo igual al anterior
+                            fontSize: isMobile ? '0.65rem' : '0.75rem',
+                            px: 1,
+                        }}
+                    >
+                        {!isMobile && 'Eliminar'}
+                    </Button>
+                </Box>
+            )
+        }
+    ];
 
     return (
-        <div className="font-sans h-screen overflow-y-auto p-4 md:p-8 bg-gray-900">
-            <div className="container mx-auto">
-                <h1 className="text-4xl font-extrabold text-gray-50 mb-6">Productos</h1>
+        <Box sx={{ minHeight: '100vh', bgcolor: '#111827', p: { xs: 2, md: 4 } }}>
+            <Box sx={{ maxWidth: '95%', mx: 'auto' }}>
+                <Typography variant="h4" fontWeight="bold" color="#F9FAFB" mb={3}>
+                    Productos
+                </Typography>
 
-                <div className="overflow-x-auto">
-                    <Paper sx={{ width: '100%', overflow: 'hidden' }}>
-                        <TableContainer sx={{ maxHeight: 440 }}>
-                            <Table stickyHeader aria-label="tabla productos">
-                                <TableHead><TableRow>
-                                    {['ID', 'Nombre', 'Precio', 'Stock', 'Acciones'].map((header) => (
-                                        <TableCell
-                                            key={header}
-                                            align={
-                                                header === 'Precio' || header === 'Stock'
-                                                    ? 'right'
-                                                    : header === 'Acciones'
-                                                        ? 'center' // alineamos Acciones al centro
-                                                        : 'left'
-                                            }
-                                            sx={{
-                                                fontWeight: 'bold',
-                                                fontSize: '1.1rem',
-                                                backgroundColor: '#1F2937',
-                                                color: '#F9FAFB',
-                                                ...(header === 'Acciones' && { px: 3 }) // agrega un poco de padding horizontal extra
-                                            }}
-                                        >
-                                            {header}
-                                        </TableCell>
-                                    ))}
-                                </TableRow>
+                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+                    <Button
+                        variant="contained"
+                        color="success"
+                        onClick={handleAgregar}
+                    >
+                        Agregar Producto
+                    </Button>
+                </Box>
 
-                                </TableHead>
+                <Paper
+                    elevation={3}
+                    sx={{
+                        height: 500,
+                        width: '100%',
+                        bgcolor: '#e7e7e7ff', // Fondo filas
+                        p: 2,
+                    }}
+                >
+                    <DataGrid
+                        rows={productos}
+                        columns={columns}
+                        getRowId={row => row.producto_id}
+                        loading={loading}
+                        pageSizeOptions={[5, 10, 25, 50]}
+                        initialState={{ pagination: { paginationModel: { page: 0, pageSize: 10 } } }}
+                        getRowHeight={() => 'auto'}
+                        sx={{
+                            bgcolor: '#e7e7e7ff', // Fondo filas
+                            border: 0,
+                            '& .MuiDataGrid-columnHeaders': {
+                                backgroundColor: '#000000', // <- color de fondo del header
+                                color: '#000000',           // <- color del texto del header
+                                fontWeight: 'bold',
+                                bgcolor: '#000000',
+                            },
+                            '& .MuiDataGrid-cell': {
+                                color: '#000000', // Texto normal
+                            },
+                            '& .MuiDataGrid-row:hover': {
+                                backgroundColor: '#B4BACF', // Hover azul oscuro
+                                color: '#F9FAFB',
+                            },
+                            '& .MuiDataGrid-footerContainer': {
+                                backgroundColor: '#b9bdc4ff', // Paginación gris claro
+                                color: '#000000',
+                            },
+                        }}
+                    />
+                </Paper>
 
-                                <TableBody>
-                                    {productos
-                                        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                                        .map((producto) => (
-                                            <TableRow
-                                                hover
-                                                role="checkbox"
-                                                tabIndex={-1}
-                                                key={producto.producto_id}
-                                                sx={{
-                                                    backgroundColor: '#e7e7e7ff',
-                                                    '&:hover': { backgroundColor: '#1E40AF' },
-                                                }}
-                                            >
-                                                <TableCell>{producto.producto_id}</TableCell>
-                                                <TableCell>{producto.nombre}</TableCell>
-                                                <TableCell align="right">${producto.precio}</TableCell>
-                                                <TableCell align="right">{producto.stock}</TableCell>
-                                                <TableCell align="center">
-                                                    <Button
-                                                        variant="contained"
-                                                        color="primary"
-                                                        size="small"
-                                                        sx={{ mr: 1 }}
-                                                        onClick={() => handleEdit(producto)}
-                                                    >
-                                                        Editar
-                                                    </Button>
-                                                    <Button
-                                                        variant="contained"
-                                                        color="error"
-                                                        size="small"
-                                                        onClick={() => handleDelete(producto)}
-                                                    >
-                                                        Eliminar
-                                                    </Button>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
+                <EliminarProducto
+                    open={openDialog}
+                    onClose={handleCloseDialog}
+                    onConfirm={handleConfirmDelete}
+                    nombre={productoSeleccionado?.nombre || ""}
+                />
 
-                        <TablePagination
-                            rowsPerPageOptions={[5, 10, 25, 50]}
-                            component="div"
-                            count={productos.length}
-                            rowsPerPage={rowsPerPage}
-                            page={page}
-                            onPageChange={handleChangePage}
-                            onRowsPerPageChange={handleChangeRowsPerPage}
-                            sx={{
-                                backgroundColor: '#b9bdc4ff',
-                                color: '#000000ff',
-                            }}
-                        />
-                    </Paper>
-                </div>
-            </div>
-        </div>
+                <ProductoForm
+                    open={openForm}
+                    onClose={() => setOpenForm(false)}
+                    onSubmit={handleSubmit}
+                    producto={productoSeleccionado}
+                />
+            </Box>
+        </Box>
     );
 };
 
