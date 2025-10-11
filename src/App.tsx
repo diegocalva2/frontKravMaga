@@ -6,6 +6,7 @@ import DashboardPage from "./pages/DashboardPageDos";
 import NavegationBarLayout from "./layouts/navegationBar";
 import ProtectedRoute from "./router/ProtectedRoute";
 import Productos from "./pages/Productos";
+import AlumnosPage from "./pages/alumnos"
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
         {/* Rutas hijas que se renderizan dentro del layout */}
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<DashboardPage />} />
+        {<Route path="alumnos" element={<AlumnosPage />} />}
         <Route path="page" element={<Page />} />
         <Route path="team" element={
           <div className="p-8">
@@ -57,7 +59,6 @@ function App() {
           </div>
         } />
       </Route>
-
       {/* Ruta 404 */}
       <Route path="*" element={<h1>404 - No encontrado</h1>} />
     </Routes>

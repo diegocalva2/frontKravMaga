@@ -8,10 +8,10 @@ import estrella from '../assets/Estrella.svg';
 // Datos de ejemplo para el menú
 const menuItems = [
   { id: 'dashboard', label: 'Dashboard', icon: Home, badge: '5', path: '/dashboard' },
-  { id: 'team', label: 'Equipo', icon: Users, path: '/team' },
+  { id: 'team', label: 'Alumnos', icon: Users, path: '/alumnos' },
   { id: 'projects', label: 'Clases', icon: FolderOpen, badge: '12', path: '/clases' },
   { id: 'calendar', label: 'Calendario', icon: Calendar, badge: '20+', path: '/calendario' },
-  { id: 'documents', label: 'Documentos', icon: FileText, path: '/documentos' },
+  { id: 'documents', label: 'Historial Asistencia', icon: FileText, path: '/documentos' },
   { id: 'reports', label: 'Reportes', icon: PieChart, path: '/reportes' },
   { id: 'products', label: 'Productos', icon: PieChart, path: '/productos' },
 ];

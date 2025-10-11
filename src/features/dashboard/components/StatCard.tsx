@@ -25,7 +25,7 @@ export const StatCard: React.FC<{
 >
       <div className="flex justify-between items-start">
         <div>
-          <p className="text-sm font-medium text-gray-300">{title}</p>
+          <p className="text-sm font-medium text-gray-200">{title}</p>
           <p className="text-3xl font-bold text-gray-100 mt-1">{value}</p>
         </div>
         <div className={`p-3 rounded-full ${variants.bg} ${variants.text}`}>
