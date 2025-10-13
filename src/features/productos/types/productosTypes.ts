@@ -13,3 +13,10 @@ export interface ProductoFormProps {
     onSubmit: (nombre: Omit<Producto, 'producto_id'> & Partial<Pick<Producto, 'producto_id'>>) => void;
     producto?: Producto | null; // Si viene, es edición; si no, es creación
 }
+
+export interface DialogAgregarStockProps {
+    open: boolean;
+    onClose: () => void;
+    producto: { producto_id: number; nombre?: string } | null;
+    onGuardar: (producto: { producto_id: number; nombre?: string }, cantidad: number) => void;
+}

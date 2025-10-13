@@ -1,11 +1,12 @@
 import React from 'react';
 import type { Producto } from '../types/Products';
-import { addProducto, deleteProducto, getProductos, updateProducto } from '../services/productosService';
+import { addProducto, addProductoStock, deleteProducto, getProductos, updateProducto } from '../services/productosService';
 import EliminarProducto from '../features/productos/components/EliminarProducto';
 import { Box, Button, Paper, useMediaQuery, useTheme, Typography } from '@mui/material';
-import { Edit as EditIcon, Trash2 as DeleteIcon } from 'lucide-react';
+import { Edit as EditIcon, Trash2 as DeleteIcon, Plus as AddIcon } from 'lucide-react';
 import { DataGrid, type GridColDef, type GridRenderCellParams } from '@mui/x-data-grid';
 import { ProductoForm } from '../features/productos/components/ProductoForm';
+import AgregarStockForm from '../features/productos/components/AgregarStockForm';
 
 const Productos = () => {
     const [productos, setProductos] = React.useState<Producto[]>([]);
@@ -14,10 +15,12 @@ const Productos = () => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-    const [openDialog, setOpenDialog] = React.useState(false);
-    const [productoSeleccionado, setProductoSeleccionado] = React.useState<Producto | null>(null);
+    // Estados separados
+    const [openForm, setOpenForm] = React.useState(false);  // Crear / Editar
+    const [openDeleteDialog, setOpenDeleteDialog] = React.useState(false); // Eliminar
+    const [openStockDialog, setOpenStockDialog] = React.useState(false); // Agregar stock
 
-    const [openForm, setOpenForm] = React.useState(false);
+    const [productoSeleccionado, setProductoSeleccionado] = React.useState<Producto | null>(null);
 
     React.useEffect(() => {
         const fetchProductos = async () => {
@@ -68,21 +71,40 @@ const Productos = () => {
         }
     };
 
-    const handleOpenDialog = (producto: Producto) => {
+    // Eliminar producto
+    const handleOpenDelete = (producto: Producto) => {
         setProductoSeleccionado(producto);
-        setOpenDialog(true);
+        setOpenDeleteDialog(true);
     };
-    const handleCloseDialog = () => setOpenDialog(false);
+    const handleCloseDelete = () => setOpenDeleteDialog(false);
 
     const handleConfirmDelete = async () => {
         if (!productoSeleccionado) return;
         try {
             await deleteProducto(productoSeleccionado.producto_id);
             setProductos(prev => prev.filter(p => p.producto_id !== productoSeleccionado.producto_id));
-            setOpenDialog(false);
+            setOpenDeleteDialog(false);
         } catch (error) {
             console.error("Error eliminando producto", error);
         }
+    };
+
+    // Agregar stock
+    const handleAgregarStock = (producto: Producto) => {
+        setProductoSeleccionado(producto);
+        setOpenStockDialog(true);
+    };
+    const handleCloseStock = () => setOpenStockDialog(false);
+
+    const onAgregarStock = async (productoParcial: { producto_id: number; nombre?: string }, cantidad: number) => {
+        await addProductoStock(productoParcial.producto_id, cantidad);
+        setProductos((prev) =>
+            prev.map((p) =>
+                p.producto_id === productoParcial.producto_id
+                    ? { ...p, stock: p.stock + cantidad }
+                    : p
+            )
+        );
     };
 
     const columns: GridColDef[] = [
@@ -106,7 +128,7 @@ const Productos = () => {
         {
             field: 'acciones',
             headerName: 'Acciones',
-            width: 160,
+            width: 200,
             headerAlign: 'center',
             align: 'center',
             sortable: false,
@@ -117,11 +139,26 @@ const Productos = () => {
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'center',
-                        gap: 1,        // espacio entre botones
-                        flexWrap: 'wrap', // permite que los botones se muevan a otra línea si no caben
-                        width: '100%',    // asegura que el Box ocupe toda la celda
+                        gap: 1,
+                        flexWrap: 'wrap',
+                        width: '100%',
                     }}
                 >
+                    <Button
+                        variant="contained"
+                        color="success"
+                        size="small"
+                        onClick={() => handleAgregarStock(params.row)}
+                        startIcon={isMobile ? <AddIcon size={16} /> : undefined}
+                        sx={{
+                            minWidth: isMobile ? 36 : 70,
+                            fontSize: isMobile ? '0.65rem' : '0.75rem',
+                            px: 1,
+                        }}
+                    >
+                        {!isMobile && 'Añadir'}
+                    </Button>
+
                     <Button
                         variant="contained"
                         color="primary"
@@ -129,7 +166,7 @@ const Productos = () => {
                         onClick={() => handleEditar(params.row)}
                         startIcon={isMobile ? <EditIcon size={16} /> : undefined}
                         sx={{
-                            minWidth: isMobile ? 36 : 70,  // ancho mínimo ajustado
+                            minWidth: isMobile ? 36 : 70,
                             fontSize: isMobile ? '0.65rem' : '0.75rem',
                             px: 1,
                         }}
@@ -141,10 +178,10 @@ const Productos = () => {
                         variant="contained"
                         color="error"
                         size="small"
-                        onClick={() => handleOpenDialog(params.row)}
+                        onClick={() => handleOpenDelete(params.row)}
                         startIcon={isMobile ? <DeleteIcon size={16} /> : undefined}
                         sx={{
-                            minWidth: isMobile ? 36 : 70,  // ancho mínimo igual al anterior
+                            minWidth: isMobile ? 36 : 70,
                             fontSize: isMobile ? '0.65rem' : '0.75rem',
                             px: 1,
                         }}
@@ -178,7 +215,7 @@ const Productos = () => {
                     sx={{
                         height: 500,
                         width: '100%',
-                        bgcolor: '#e7e7e7ff', // Fondo filas
+                        bgcolor: '#e7e7e7ff',
                         p: 2,
                     }}
                 >
@@ -191,41 +228,50 @@ const Productos = () => {
                         initialState={{ pagination: { paginationModel: { page: 0, pageSize: 10 } } }}
                         getRowHeight={() => 'auto'}
                         sx={{
-                            bgcolor: '#e7e7e7ff', // Fondo filas
+                            bgcolor: '#e7e7e7ff',
                             border: 0,
                             '& .MuiDataGrid-columnHeaders': {
                                 backgroundColor: '#000000', // <- color de fondo del header
                                 color: '#000000',           // <- color del texto del header
                                 fontWeight: 'bold',
-                                bgcolor: '#000000',
                             },
                             '& .MuiDataGrid-cell': {
-                                color: '#000000', // Texto normal
+                                color: '#000000',
                             },
                             '& .MuiDataGrid-row:hover': {
-                                backgroundColor: '#B4BACF', // Hover azul oscuro
+                                backgroundColor: '#B4BACF',
                                 color: '#F9FAFB',
                             },
                             '& .MuiDataGrid-footerContainer': {
-                                backgroundColor: '#b9bdc4ff', // Paginación gris claro
+                                backgroundColor: '#b9bdc4ff',
                                 color: '#000000',
                             },
                         }}
                     />
                 </Paper>
 
+                {/* ✅ Diálogo Eliminar */}
                 <EliminarProducto
-                    open={openDialog}
-                    onClose={handleCloseDialog}
+                    open={openDeleteDialog}
+                    onClose={handleCloseDelete}
                     onConfirm={handleConfirmDelete}
                     nombre={productoSeleccionado?.nombre || ""}
                 />
 
+                {/* ✅ Formulario Crear/Editar */}
                 <ProductoForm
                     open={openForm}
                     onClose={() => setOpenForm(false)}
                     onSubmit={handleSubmit}
                     producto={productoSeleccionado}
+                />
+
+                {/* ✅ Formulario Agregar Stock */}
+                <AgregarStockForm
+                    open={openStockDialog}
+                    onClose={handleCloseStock}
+                    producto={productoSeleccionado}
+                    onGuardar={onAgregarStock}
                 />
             </Box>
         </Box>

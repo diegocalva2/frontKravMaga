@@ -67,3 +67,17 @@ export const deleteProducto = async (producto_id: number): Promise<void> => {
         throw new Error("No se pudo eliminar el producto.");
     }
 };
+
+export const addProductoStock = async (
+    producto_id: number,
+    stock: number
+): Promise<Producto> => {
+    try {
+        const { data } = await apiClient.put(`/productos/agregarstock/${producto_id}`, { stock });
+        return data as Producto
+    } catch (error: any) {
+        throw new Error(
+            error?.response?.data?.message || "No se pudo agregar el stock al producto."
+        );
+    }
+}

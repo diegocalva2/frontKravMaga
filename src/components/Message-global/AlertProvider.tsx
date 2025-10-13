@@ -17,7 +17,7 @@ export const AlertProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         <Snackbar
           open={!!alert}
           anchorOrigin={{ vertical: "top", horizontal: "right" }}
-          autoHideDuration={5000}
+          autoHideDuration={7000}
           onClose={() => setAlert(null)}
         >
           <Alert onClose={() => setAlert(null)} severity={alert.type} variant="filled">
