@@ -1,91 +1,108 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { X, User, ShieldCheck, History } from "lucide-react";
-import type { EstadoMembresia } from "../types/alumnosTypes";
-import type { Alumno } from "../types/alumnosTypes";
-import type { MembresiaHistorial } from "../types/alumnosTypes";
-import type { AsistenciaHistorial } from "../types/alumnosTypes";
+import type { Alumno, AsistenciaHistorial } from "../types/alumnosTypes";
+import type { MembresiaHistorial } from "../../membresias/types/membresiasTypes";
+import { estadoColors } from "./AlumnosEstadosMembresia";
+import membresiasService from "../../membresias/services/membresiaService";
+import { LoadingSpinner } from "../../../components/ui/LoadingSpinner";
 
 interface AlumnoDetailPanelProps {
   alumno: Alumno | null;
   onClose: () => void;
 }
 
-// ✅ CORRECCIÓN: Se mueve 'estadoColors' a un scope compartido
-// para que tanto AlumnoDetailPanel como AlumnosPage puedan usarlo.
-const estadoColors: Record<EstadoMembresia, string> = {
-  Activo: "bg-green-500/20 text-green-400 border border-green-500/30",
-  "Por Vencer": "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30",
-  Vencido: "bg-red-500/20 text-red-400 border border-red-500/30",
-};
-
-// Mock data para las pestañas del panel
-const mockMembresias: MembresiaHistorial[] = [
-  {
-    membresia_id: "m1",
-    plan_nombre: "Plan Mensual",
-    fecha_inicio: "2024-09-15",
-    fecha_fin: "2024-10-15",
-    esta_activa: true,
-  },
-  {
-    membresia_id: "m2",
-    plan_nombre: "Plan Mensual",
-    fecha_inicio: "2024-08-15",
-    fecha_fin: "2024-09-15",
-    esta_activa: false,
-  },
-  {
-    membresia_id: "m3",
-    plan_nombre: "Plan Trimestral",
-    fecha_inicio: "2024-05-15",
-    fecha_fin: "2024-08-15",
-    esta_activa: false,
-  },
-];
-
-const mockAsistencias: AsistenciaHistorial[] = [
-  {
-    asistencia_id: "a1",
-    fecha_asistencia: "2024-10-02 19:00",
-    clase_nombre: "Krav Maga Vespertino",
-  },
-  {
-    asistencia_id: "a2",
-    fecha_asistencia: "2024-09-30 19:00",
-    clase_nombre: "Krav Maga Vespertino",
-  },
-  {
-    asistencia_id: "a3",
-    fecha_asistencia: "2024-09-28 10:00",
-    clase_nombre: "Acondicionamiento Físico",
-  },
-];
-
 export const AlumnoDetailPanel: React.FC<AlumnoDetailPanelProps> = ({
   alumno,
   onClose,
 }) => {
   const [activeTab, setActiveTab] = useState("general");
+  const [membresias, setMembresias] = useState<MembresiaHistorial[]>([]);
+  const [loadingMembresias, setLoadingMembresias] = useState(false);
+  
+  // Ref para detectar clicks fuera del panel
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  // Mock data para asistencias (por ahora)
+  const mockAsistencias: AsistenciaHistorial[] = [
+    {
+      asistencia_id: "a1",
+      fecha_asistencia: "2024-10-02 19:00",
+      clase_nombre: "Krav Maga Vespertino",
+    },
+    {
+      asistencia_id: "a2",
+      fecha_asistencia: "2024-09-30 19:00",
+      clase_nombre: "Krav Maga Vespertino",
+    },
+    {
+      asistencia_id: "a3",
+      fecha_asistencia: "2024-09-28 10:00",
+      clase_nombre: "Acondicionamiento Físico",
+    },
+  ];
+
+  // Cargar membresías cuando se abre el panel
+  useEffect(() => {
+    if (alumno && activeTab === "membresias") {
+      fetchMembresias();
+    }
+  }, [alumno, activeTab]);
+
+  // Detectar clicks fuera del panel para cerrarlo
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      // Si el panel está abierto Y el click fue fuera del panel
+      if (alumno && panelRef.current && !panelRef.current.contains(event.target as Node)) {
+        onClose();
+      }
+    };
+
+    // Agregar el event listener
+    document.addEventListener("mousedown", handleClickOutside);
+
+    // Limpiar el event listener cuando el componente se desmonte
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [alumno, onClose]);
+
+  const fetchMembresias = async () => {
+    if (!alumno) return;
+    
+    try {
+      setLoadingMembresias(true);
+      const data = await membresiasService.obtenerPorAlumno(alumno.alumno_id);
+      setMembresias(data);
+    } catch (error) {
+      console.error("Error al cargar membresías:", error);
+      setMembresias([]);
+    } finally {
+      setLoadingMembresias(false);
+    }
+  };
 
   const panelClasses = alumno ? "translate-x-0" : "translate-x-full";
 
   return (
     <div
+      ref={panelRef}
       className={`fixed inset-y-0 right-0 z-30 w-full md:w-1/2 lg:w-2/6 bg-slate-800 shadow-2xl shadow-black/50 transform transition-transform duration-300 ease-in-out ${panelClasses}`}
     >
       {alumno && (
-        // ✅ CORRECCIÓN: Se añade 'text-left' para forzar la alineación a la izquierda y anular cualquier estilo global.
         <div className="flex flex-col h-full text-white text-left">
           {/* Encabezado del Panel */}
           <div className="p-6 bg-slate-900/50 border-b border-slate-700">
             <div className="flex justify-between items-start">
               <div>
                 <h2 className="text-2xl font-bold">{alumno.nombre_completo}</h2>
-                <span
-                  className={`mt-2 inline-block px-3 py-1 text-sm font-semibold rounded-full ${estadoColors[alumno.estado_membresia]}`}
-                >
-                  Membresía {alumno.estado_membresia}
-                </span>
+                <div className="mt-2">
+                  <span className="text-gray-300 text-sm">Estado Membresía: </span>
+                  <span
+                    className={`inline-block px-3 py-1 text-sm font-semibold rounded-full ${estadoColors[alumno.estado_membresia]}`}
+                  >
+                       {alumno.estado_membresia}
+                  </span>
+                </div>
               </div>
               <button
                 onClick={onClose}
@@ -154,40 +171,68 @@ export const AlumnoDetailPanel: React.FC<AlumnoDetailPanelProps> = ({
                   <strong>Condiciones Médicas:</strong>{" "}
                   {alumno.condiciones_medicas || "Ninguna"}
                 </p>
+                {alumno.notas_instructor && (
+                  <>
+                    <h3 className="text-lg font-semibold text-gray-100 border-b border-slate-700 pb-2 mt-6">
+                      Notas del Instructor
+                    </h3>
+                    <p>{alumno.notas_instructor}</p>
+                  </>
+                )}
               </div>
             )}
 
             {activeTab === "membresias" && (
-              <ul className="divide-y divide-slate-700">
-                {mockMembresias.map((m) => (
-                  <li key={m.membresia_id} className="py-3">
-                    <p className="font-semibold">{m.plan_nombre}</p>
-                    <p className="text-sm text-gray-400">
-                      {m.fecha_inicio} al {m.fecha_fin} -{" "}
-                      <span
-                        className={
-                          m.esta_activa ? "text-green-400" : "text-gray-500"
-                        }
-                      >
-                        {m.esta_activa ? "Activa" : "Finalizada"}
-                      </span>
-                    </p>
-                  </li>
-                ))}
-              </ul>
+              <div>
+                {loadingMembresias ? (
+                  <div className="flex justify-center py-8">
+                    <LoadingSpinner />
+                  </div>
+                ) : membresias.length > 0 ? (
+                  <ul className="divide-y divide-slate-700">
+                    {membresias.map((m) => (
+                      <li key={m.membresia_id} className="py-3">
+                        <p className="font-semibold">{m.plan_nombre}</p>
+                        <p className="text-sm text-gray-400">
+                          {m.fecha_inicio} al {m.fecha_fin} -{" "}
+                          <span
+                            className={
+                              m.esta_activa ? "text-green-400" : "text-gray-500"
+                            }
+                          >
+                            {m.esta_activa ? "Activa" : "Finalizada"}
+                          </span>
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-center text-gray-400 py-8">
+                    No hay membresías registradas
+                  </p>
+                )}
+              </div>
             )}
 
             {activeTab === "asistencias" && (
-              <ul className="divide-y divide-slate-700">
-                {mockAsistencias.map((a) => (
-                  <li key={a.asistencia_id} className="py-3">
-                    <p className="font-semibold">{a.clase_nombre}</p>
-                    <p className="text-sm text-gray-400">
-                      {a.fecha_asistencia}
-                    </p>
-                  </li>
-                ))}
-              </ul>
+              <div>
+                {mockAsistencias.length > 0 ? (
+                  <ul className="divide-y divide-slate-700">
+                    {mockAsistencias.map((a) => (
+                      <li key={a.asistencia_id} className="py-3">
+                        <p className="font-semibold">{a.clase_nombre}</p>
+                        <p className="text-sm text-gray-400">
+                          {a.fecha_asistencia}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-center text-gray-400 py-8">
+                    No hay asistencias registradas
+                  </p>
+                )}
+              </div>
             )}
           </div>
         </div>

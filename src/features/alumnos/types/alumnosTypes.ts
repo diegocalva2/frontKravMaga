@@ -1,5 +1,5 @@
 // Estado calculado para la membresía del alumno
-export type EstadoMembresia = 'Activo' | 'Por Vencer' | 'Vencido';
+export type EstadoMembresia = 'Activo' | 'Por Vencer' | 'Vencido' |'Sin Membresia';
 
 // Tipo principal basado en tu tabla `alumnos` (lo que viene del backend)
 /**
@@ -45,23 +45,10 @@ export interface AlumnoFormData {
     parentezco_contacto_emergencia?: string;
     condiciones_medicas?: string;
 }
-
-// Tipo para el historial de membresías
-export interface MembresiaHistorial {
-    membresia_id: string;
-    plan_nombre: string;
-    fecha_inicio: string;
-    fecha_fin: string;
-    esta_activa: boolean;
-    plan?: {
-        plan_id: string;
-        nombre: string;
-        precio: number;
-        duracion_dias: number;
-    };
-}
-
-// Tipo para el historial de asistencias
+/**
+ * TIPOS PARA EL HISTORIAL DE ASISTENCIAS
+ * (Cuando implementes esta feature, moverás esto a su propio archivo)
+ */
 export interface AsistenciaHistorial {
     asistencia_id: string;
     clase_nombre: string;

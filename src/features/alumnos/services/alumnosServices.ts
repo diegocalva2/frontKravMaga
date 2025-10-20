@@ -1,80 +1,77 @@
-import apiClient from "../../../api/apiClient";
-import type { AlumnoResponse, AlumnoFormData, Alumno, EstadoMembresia } from "../types/alumnosTypes";
+// src/features/alumnos/services/alumnosService.ts
+import apiClient from '../../../api/apiClient';
+import type { AlumnoResponse, AlumnoFormData } from '../types/alumnosTypes';
 
-const ALUMNOS_ENDPOINT = 'alumnos'
-
-/**
- * calcula el estado de una membresia basado en la fecha fin 
- * esta es una funcion temporal hasta que implementes la logica completa con membresias
- */
-
-const CalcularEstadoMembresia = (alumno: AlumnoResponse): EstadoMembresia => {
-    //implementar logica real consultando membresias
-    //por ahora retorna un valor por defecto 
-    return 'Activo';
-};
-
-/**
- * transforma la respuesta del backend agregando el estado de membresia
- */
-const transformarAlumno = (alumno: AlumnoResponse): Alumno => {
-    return {
-        ...alumno,
-        estado_membresia: CalcularEstadoMembresia(alumno)
-    };
-};
+const ALUMNOS_ENDPOINT = '/alumnos';
 
 export const alumnosService = {
     /**
-     * obtener todos los alumnos 
+     * Obtener todos los alumnos SIN calcular estado
+     * El cálculo se hace en el hook después de obtener las membresías
      */
-    obtenerTodos: async (): Promise<Alumno[]> => {
+    obtenerTodos: async (): Promise<AlumnoResponse[]> => {
         try {
             const response = await apiClient.get<AlumnoResponse[]>(ALUMNOS_ENDPOINT);
-            return response.data.map(transformarAlumno);
-
+            return response.data;
         } catch (error) {
-            console.error('error al obtener alumnos:', error)
+            console.error('Error al obtener alumnos:', error);
             throw error;
         }
     },
+
     /**
-     * obtener un alumno por ID
+     * Obtener un alumno por ID SIN calcular estado
      */
-    obtenerPorId: async (id: string): Promise<Alumno> => {
+    obtenerPorId: async (id: string): Promise<AlumnoResponse> => {
         try {
             const response = await apiClient.get<AlumnoResponse>(`${ALUMNOS_ENDPOINT}/${id}`);
-            return transformarAlumno(response.data)
-        }
-        catch (error) {
-            console.error('error al obtener alumno en especifico', error)
+            return response.data;
+        } catch (error) {
+            console.error(`Error al obtener alumno ${id}:`, error);
             throw error;
         }
-
     },
+
     /**
-     * crear un nuevo alumno 
+     * Crear un nuevo alumno
      */
-    crear: async (alumnData: AlumnoFormData): Promise<Alumno> => {
+    crear: async (alumnoData: AlumnoFormData): Promise<AlumnoResponse> => {
         try {
-            const response = await apiClient.post<{ msg: string; alumno: AlumnoResponse }>(ALUMNOS_ENDPOINT, alumnData);
-            return transformarAlumno(response.data.alumno);
-        }
-        catch (error) {
+            const response = await apiClient.post<{ msg: string; alumno: AlumnoResponse }>(
+                ALUMNOS_ENDPOINT,
+                alumnoData
+            );
+            return response.data.alumno;
+        } catch (error) {
             console.error('Error al crear alumno:', error);
             throw error;
         }
     },
+
     /**
-     * actualizar un alumno existente 
+     * Actualizar un alumno existente
      */
-    actualizar: async (id: string, alumnoData: Partial<AlumnoFormData>): Promise<Alumno> => {
+    actualizar: async (id: string, alumnoData: Partial<AlumnoFormData>): Promise<AlumnoResponse> => {
         try {
-            const response = await apiClient.put<{ msg: string; alumno: AlumnoResponse }>(`${ALUMNOS_ENDPOINT}/${id}`, alumnoData);
-            return transformarAlumno(response.data.alumno);
+            const response = await apiClient.put<{ msg: string; alumno: AlumnoResponse }>(
+                `${ALUMNOS_ENDPOINT}/${id}`,
+                alumnoData
+            );
+            return response.data.alumno;
+        } catch (error) {
+            console.error(`Error al actualizar alumno ${id}:`, error);
+            throw error;
         }
-        catch (error) {
-            console.error('error al actualizar un alumno, ', error);
+    },
+
+    /**
+     * Eliminar un alumno
+     */
+    eliminar: async (id: string): Promise<void> => {
+        try {
+            await apiClient.delete(`${ALUMNOS_ENDPOINT}/${id}`);
+        } catch (error) {
+            console.error(`Error al eliminar alumno ${id}:`, error);
             throw error;
         }
     }

@@ -1,7 +1,7 @@
 {
   "recommendations": [
-    "dbaeumer.vscode-eslint",
-    "usernamehw.errorlens",
+    // "dbaeumer.vscode-eslint",
+    // "usernamehw.errorlens",
     "PKief.material-icon-theme",
     "esbenp.prettier-vscode",
     "dsznajder.es7-react-js-snippets",

@@ -1,13 +1,12 @@
 // src/pages/AlumnosPage.tsx
 import React, { useState, useMemo } from 'react';
-import { Plus, Search } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import type { Alumno } from '../features/alumnos/types/alumnosTypes';
 import { AlumnoDetailPanel } from '../features/alumnos/components/AlumnoDetailPanel';
 import { useDebounce } from '../hooks/useDebounce';
 import { useAlumnos } from '../features/alumnos/hooks/useAlumnos';
 import type { SortConfig, SortDirection } from '../features/alumnos/components/SortableHeader';
 import { SortableHeader } from '../features/alumnos/components/SortableHeader';
-import { estadoColors } from '../features/alumnos/components/AlumnosEstadosMembresia';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/input';
 import { Table, TableHeader, TableBody, TableRow, TableCell } from '../components/ui/Table';
@@ -15,8 +14,11 @@ import { Badge } from '../components/ui/badge';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 
 const AlumnosPage: React.FC = () => {
+    // ============================================
+    // ESTADO LOCAL (UI)
+    // ============================================
     const [selectedAlumno, setSelectedAlumno] = useState<Alumno | null>(null);
-    const [mainSearch, setMainSearch] = useState('');
+    const [mainSearch] = useState('');
     const [filters, setFilters] = useState({
         nombre: '',
         estado: '',
@@ -28,15 +30,23 @@ const AlumnosPage: React.FC = () => {
         direction: 'asc' 
     });
 
-    // Hook personalizado para obtener datos del backend
+    // ============================================
+    // DATOS DEL BACKEND (via hook)
+    // ============================================
     const { alumnos, loading, error } = useAlumnos();
 
+    // ============================================
+    // DEBOUNCE para optimizar búsqueda
+    // ============================================
     const debouncedMainSearch = useDebounce(mainSearch, 300);
 
+    // ============================================
+    // LÓGICA DE FILTRADO Y ORDENAMIENTO
+    // ============================================
     const filteredAndSortedAlumnos = useMemo(() => {
         let alumnosFiltrados = [...alumnos];
 
-        // Búsqueda principal
+        // Búsqueda principal (nombre)
         if (debouncedMainSearch) {
             alumnosFiltrados = alumnosFiltrados.filter(a =>
                 a.nombre_completo.toLowerCase().includes(debouncedMainSearch.toLowerCase())
@@ -73,6 +83,9 @@ const AlumnosPage: React.FC = () => {
         return alumnosFiltrados;
     }, [alumnos, debouncedMainSearch, filters, sortConfig]);
 
+    // ============================================
+    // MANEJADORES DE EVENTOS
+    // ============================================
     const handleSort = (key: keyof Alumno) => {
         let direction: SortDirection = 'asc';
         if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
@@ -86,54 +99,56 @@ const AlumnosPage: React.FC = () => {
         setFilters(prev => ({ ...prev, [name]: value }));
     };
 
-    const getEstadoBadgeVariant = (estado: string) => {
+    const getEstadoBadgeVariant = (estado: string): 'success' | 'warning' | 'danger' | 'info' => {
         switch (estado) {
             case 'Activo': return 'success';
             case 'Por Vencer': return 'warning';
-            case 'Vencido': return 'danger';
+            case 'Vencido': return 'warning';
+            case 'Sin Membresía': return 'info';
             default: return 'info';
         }
     };
 
-    // Loading state
+    // ============================================
+    // ESTADOS DE CARGA Y ERROR
+    // ============================================
     if (loading) {
         return (
-            <div className="flex items-center justify-center h-screen">
+            <div className="flex flex-col items-center justify-center h-screen">
                 <LoadingSpinner size="lg" />
-                <p className="ml-4 text-white text-xl">Cargando alumnos...</p>
+                <p className="mt-4 text-white text-xl">Cargando alumnos...</p>
             </div>
         );
     }
 
-    // Error state
     if (error) {
         return (
             <div className="flex items-center justify-center h-screen">
                 <div className="text-center">
                     <p className="text-red-400 text-xl mb-4">Error al cargar alumnos</p>
-                    
+                    <p className="text-gray-400">{error}</p>
                 </div>
             </div>
         );
     }
 
+    // ============================================
+    // RENDER PRINCIPAL
+    // ============================================
     return (
         <div className="p-4 md:p-8 font-sans text-white h-screen overflow-y-auto">
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-6">
                 <h1 className="text-3xl font-bold">Gestión de Alumnos</h1>
                 <div className="flex items-center gap-4 w-full md:w-auto">
-                    <Input
-                        type="text"
-                        placeholder="Buscar por nombre..."
-                        value={mainSearch}
-                        onChange={(e) => setMainSearch(e.target.value)}
-                        icon={<Search className="w-5 h-5" />}
-                    />
+
                     <Button
                         variant="primary"
                         icon={<Plus className="w-5 h-5" />}
-                        onClick={() => {/* TODO: Abrir modal de crear alumno */}}
+                        onClick={() => {
+                            // TODO: Implementar modal de crear alumno
+                            console.log('Crear alumno');
+                        }}
                     >
                         Agregar Alumno
                     </Button>
@@ -189,6 +204,7 @@ const AlumnosPage: React.FC = () => {
                                 <option value="Activo">Activo</option>
                                 <option value="Por Vencer">Por Vencer</option>
                                 <option value="Vencido">Vencido</option>
+                                <option value="Sin Membresía">Sin Membresía</option>
                             </select>
                         </td>
                         <td className="p-2">
