@@ -5,6 +5,11 @@ import type { MembresiaHistorial } from "../../membresias/types/membresiasTypes"
 import { estadoColors } from "./AlumnosEstadosMembresia";
 import membresiasService from "../../membresias/services/membresiaService";
 import { LoadingSpinner } from "../../../components/ui/LoadingSpinner";
+import { 
+  formatearFecha, 
+  calcularEstadoMembresiaIndividual,
+  obtenerColorEstadoMembresia 
+} from "../../../lib/membresiasUtils";
 
 interface AlumnoDetailPanelProps {
   alumno: Alumno | null;
@@ -19,7 +24,6 @@ export const AlumnoDetailPanel: React.FC<AlumnoDetailPanelProps> = ({
   const [membresias, setMembresias] = useState<MembresiaHistorial[]>([]);
   const [loadingMembresias, setLoadingMembresias] = useState(false);
   
-  // Ref para detectar clicks fuera del panel
   const panelRef = useRef<HTMLDivElement>(null);
 
   // Mock data para asistencias (por ahora)
@@ -51,16 +55,12 @@ export const AlumnoDetailPanel: React.FC<AlumnoDetailPanelProps> = ({
   // Detectar clicks fuera del panel para cerrarlo
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      // Si el panel está abierto Y el click fue fuera del panel
       if (alumno && panelRef.current && !panelRef.current.contains(event.target as Node)) {
         onClose();
       }
     };
 
-    // Agregar el event listener
     document.addEventListener("mousedown", handleClickOutside);
-
-    // Limpiar el event listener cuando el componente se desmonte
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
@@ -100,7 +100,7 @@ export const AlumnoDetailPanel: React.FC<AlumnoDetailPanelProps> = ({
                   <span
                     className={`inline-block px-3 py-1 text-sm font-semibold rounded-full ${estadoColors[alumno.estado_membresia]}`}
                   >
-                       {alumno.estado_membresia}
+                    {alumno.estado_membresia}
                   </span>
                 </div>
               </div>
@@ -118,19 +118,31 @@ export const AlumnoDetailPanel: React.FC<AlumnoDetailPanelProps> = ({
             <nav className="flex gap-6 -mb-px">
               <button
                 onClick={() => setActiveTab("general")}
-                className={`py-4 px-1 border-b-2 font-medium flex items-center gap-2 ${activeTab === "general" ? "border-blue-500 text-blue-400" : "border-transparent text-gray-400 hover:text-gray-200"}`}
+                className={`py-4 px-1 border-b-2 font-medium flex items-center gap-2 ${
+                  activeTab === "general" 
+                    ? "border-blue-500 text-blue-400" 
+                    : "border-transparent text-gray-400 hover:text-gray-200"
+                }`}
               >
                 <User size={16} /> General
               </button>
               <button
                 onClick={() => setActiveTab("membresias")}
-                className={`py-4 px-1 border-b-2 font-medium flex items-center gap-2 ${activeTab === "membresias" ? "border-blue-500 text-blue-400" : "border-transparent text-gray-400 hover:text-gray-200"}`}
+                className={`py-4 px-1 border-b-2 font-medium flex items-center gap-2 ${
+                  activeTab === "membresias" 
+                    ? "border-blue-500 text-blue-400" 
+                    : "border-transparent text-gray-400 hover:text-gray-200"
+                }`}
               >
                 <ShieldCheck size={16} /> Membresías
               </button>
               <button
                 onClick={() => setActiveTab("asistencias")}
-                className={`py-4 px-1 border-b-2 font-medium flex items-center gap-2 ${activeTab === "asistencias" ? "border-blue-500 text-blue-400" : "border-transparent text-gray-400 hover:text-gray-200"}`}
+                className={`py-4 px-1 border-b-2 font-medium flex items-center gap-2 ${
+                  activeTab === "asistencias" 
+                    ? "border-blue-500 text-blue-400" 
+                    : "border-transparent text-gray-400 hover:text-gray-200"
+                }`}
               >
                 <History size={16} /> Asistencias
               </button>
@@ -145,12 +157,12 @@ export const AlumnoDetailPanel: React.FC<AlumnoDetailPanelProps> = ({
                   Datos Personales
                 </h3>
                 <p>
-                  <strong>Fecha de Nacimiento:</strong>{" "}
-                  {alumno.fecha_nacimiento || "N/A"}
+                  <strong>Fecha de Nacimiento:</strong> {alumno.fecha_nacimiento || "N/A"}
                 </p>
                 <p>
                   <strong>Fecha de Ingreso:</strong> {alumno.fecha_ingreso}
                 </p>
+
                 <h3 className="text-lg font-semibold text-gray-100 border-b border-slate-700 pb-2 mt-6">
                   Contacto
                 </h3>
@@ -160,17 +172,17 @@ export const AlumnoDetailPanel: React.FC<AlumnoDetailPanelProps> = ({
                 <p>
                   <strong>Correo:</strong> {alumno.correo || "N/A"}
                 </p>
+
                 <h3 className="text-lg font-semibold text-gray-100 border-b border-slate-700 pb-2 mt-6">
                   Información Médica y de Emergencia
                 </h3>
                 <p>
-                  <strong>Contacto de Emergencia:</strong>{" "}
-                  {alumno.contacto_emergencia || "N/A"}
+                  <strong>Contacto de Emergencia:</strong> {alumno.contacto_emergencia || "N/A"}
                 </p>
                 <p>
-                  <strong>Condiciones Médicas:</strong>{" "}
-                  {alumno.condiciones_medicas || "Ninguna"}
+                  <strong>Condiciones Médicas:</strong> {alumno.condiciones_medicas || "Ninguna"}
                 </p>
+
                 {alumno.notas_instructor && (
                   <>
                     <h3 className="text-lg font-semibold text-gray-100 border-b border-slate-700 pb-2 mt-6">
@@ -190,21 +202,32 @@ export const AlumnoDetailPanel: React.FC<AlumnoDetailPanelProps> = ({
                   </div>
                 ) : membresias.length > 0 ? (
                   <ul className="divide-y divide-slate-700">
-                    {membresias.map((m) => (
-                      <li key={m.membresia_id} className="py-3">
-                        <p className="font-semibold">{m.plan_nombre}</p>
-                        <p className="text-sm text-gray-400">
-                          {m.fecha_inicio} al {m.fecha_fin} -{" "}
-                          <span
-                            className={
-                              m.esta_activa ? "text-green-400" : "text-gray-500"
-                            }
-                          >
-                            {m.esta_activa ? "Activa" : "Finalizada"}
-                          </span>
-                        </p>
-                      </li>
-                    ))}
+                    {membresias.map((m) => {
+                      // ✅ Calcular el estado de cada membresía
+                      const estadoMembresia = calcularEstadoMembresiaIndividual(
+                        m.fecha_inicio,
+                        m.fecha_fin,
+                        m.esta_activa
+                      );
+                      const colorEstado = obtenerColorEstadoMembresia(estadoMembresia);
+
+                      return (
+                        <li key={m.membresia_id} className="py-3">
+                          <p className="font-semibold">{m.plan_nombre}</p>
+                          <p className="text-sm text-gray-400">
+                            {formatearFecha(m.fecha_inicio)} al {formatearFecha(m.fecha_fin)} -{" "}
+                            <span className={colorEstado}>
+                              {estadoMembresia}
+                            </span>
+                          </p>
+                          {m.plan && (
+                            <p className="text-sm text-gray-400">
+                              ${m.plan.precio.toFixed(2)} - {m.plan.duracion_dias} días
+                            </p>
+                          )}
+                        </li>
+                      );
+                    })}
                   </ul>
                 ) : (
                   <p className="text-center text-gray-400 py-8">
@@ -221,9 +244,7 @@ export const AlumnoDetailPanel: React.FC<AlumnoDetailPanelProps> = ({
                     {mockAsistencias.map((a) => (
                       <li key={a.asistencia_id} className="py-3">
                         <p className="font-semibold">{a.clase_nombre}</p>
-                        <p className="text-sm text-gray-400">
-                          {a.fecha_asistencia}
-                        </p>
+                        <p className="text-sm text-gray-400">{a.fecha_asistencia}</p>
                       </li>
                     ))}
                   </ul>

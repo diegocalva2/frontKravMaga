@@ -1,3 +1,4 @@
+//src/features/alumnos/types/alumnosTypes.ts
 // Estado calculado para la membresía del alumno
 export type EstadoMembresia = 'Activo' | 'Por Vencer' | 'Vencido' |'Sin Membresia';
 

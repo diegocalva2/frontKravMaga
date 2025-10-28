@@ -7,7 +7,7 @@ import estrella from '../assets/Estrella.svg';
 
 // Datos de ejemplo para el menú
 const menuItems = [
-  { id: 'dashboard', label: 'Dashboard', icon: Home, badge: '5', path: '/dashboard' },
+  { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/dashboard' },
   { id: 'team', label: 'Alumnos', icon: Users, path: '/alumnos' },
   { id: 'projects', label: 'Clases', icon: FolderOpen, badge: '12', path: '/clases' },
   { id: 'calendar', label: 'Calendario', icon: Calendar, badge: '20+', path: '/calendario' },
